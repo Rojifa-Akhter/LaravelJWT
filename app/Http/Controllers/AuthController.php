@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\Verified;
+use App\Notifications\NewUserNotification;
 
 class AuthController extends Controller
 {  
@@ -26,9 +27,13 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
     
-        // Send email verification link
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new NewUserNotification($user));
+        }
+
         $user->sendEmailVerificationNotification();
-    
+
         return response()->json(['message' => 'User successfully registered, check your email for verification']);
     }
     
